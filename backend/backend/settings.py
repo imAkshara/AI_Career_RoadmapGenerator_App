@@ -16,8 +16,12 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-)cgr-2*(y7&_ut4pl0-j7
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 # ALLOWED_HOSTS – allow all for Railway (restrict later)
-ALLOWED_HOSTS = ['*']   # or use os.environ.get('ALLOWED_HOSTS', '').split(',')
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.vercel.app']   # or use os.environ.get('ALLOWED_HOSTS', '').split(',')
 
+# Static files - Required for Vercel
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # ============ APPLICATION DEFINITION ============
 INSTALLED_APPS = [
     'django.contrib.admin',
