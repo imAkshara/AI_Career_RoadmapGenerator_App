@@ -15,13 +15,9 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-)cgr-2*(y7&_ut4pl0-j7
 # DEBUG – set to False in production
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-# ALLOWED_HOSTS – allow all for Railway (restrict later)
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.vercel.app']   # or use os.environ.get('ALLOWED_HOSTS', '').split(',')
+# ALLOWED_HOSTS – allow all for Railway/Vercel (restrict later)
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.vercel.app', '.railway.app']
 
-# Static files - Required for Vercel
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # ============ APPLICATION DEFINITION ============
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -44,10 +40,10 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  # Must be at the top!
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # NEW: for static files
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # For static files
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',   # Keep for production (you can comment out locally)
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -73,11 +69,19 @@ TEMPLATES = [
 WSGI_APPLICATION = 'backend.wsgi.application'
 
 # ============ DATABASE ============
-# Use PostgreSQL on Railway (via DATABASE_URL), fallback to SQLite locally
-import dj_database_url
-DATABASES = {
-    'default': dj_database_url.config(default='sqlite:///db.sqlite3')
-}
+# Try to import dj_database_url, fallback to SQLite if not found
+try:
+    import dj_database_url
+    DATABASES = {
+        'default': dj_database_url.config(default='sqlite:///db.sqlite3')
+    }
+except ImportError:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # ============ PASSWORD VALIDATION ============
 AUTH_PASSWORD_VALIDATORS = [
@@ -94,16 +98,16 @@ USE_I18N = True
 USE_TZ = True
 
 # ============ STATIC FILES ============
-STATIC_URL = 'static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'          # Where collectstatic will put files
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # ============ DEFAULT PRIMARY KEY ============
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ============ CORS SETTINGS ============
-# Allow all origins during development (your React frontend on Railway later)
-CORS_ALLOW_ALL_ORIGINS = True   # For production, set specific allowed origins
+# Allow all origins during development
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOW_METHODS = [
@@ -122,7 +126,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',   # Adjust as needed
+        'rest_framework.permissions.AllowAny',
     ],
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
